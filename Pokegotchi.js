@@ -69,9 +69,9 @@ var Pokegotchi = (function(){
    * @param pokemon <Object>: A TexturePacker object of a
    * Pokemon. This object should also contain an animation key that
    * points to an objects with the keys "moving", "standing", "sick",
-   * "backMoving", and "backStanding". Each of these contains "start"
-   * and "length" keys that reference the first frame, and length of
-   * animation for each. For example:
+   * "dead", "backMoving", and "backStanding". Each of these contains
+   * "start" and "length" keys that reference the first frame, and
+   * length of animation for each. For example:
    *
    *  "animations": {
    *    "moving": {start:0, length:80},
@@ -191,7 +191,9 @@ var Pokegotchi = (function(){
      * 50 milliseconds.
      */
     function animate(){
-      if(this.sick){
+      if(this.dead){
+        this.animation = pokemon.animations.dead;
+      } else if(this.sick){
         this.animation = pokemon.animations.sick;
       } else if(this.moving){
         this.animation = this.backTurned ? pokemon.animations.backMoving : pokemon.animations.moving;
@@ -217,7 +219,9 @@ var Pokegotchi = (function(){
       lastFrame.h = f.h;
       this.frame++;
 
-      setTimeout(animate.bind(this), 50 * (1 + this.hunger * 0.00002));
+      if(!this.dead){
+        setTimeout(animate.bind(this), 50 * (1 + this.hunger * 0.00002));
+      }
     }
 
     animate.call(parameters);
