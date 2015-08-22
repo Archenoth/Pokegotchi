@@ -39,24 +39,36 @@ var Pokegotchi = (function(){
       }
     }
 
+    // Hungry means unhappy
+    if(this.hunger > 20000 && Math.random() < 0.001){
+      this.happiness--;
+    }
+
+    // Starving means VERY unhappy, and possibly death
     if(this.hunger > 50000){
-      if(Math.random() < this.hunger * 0.0000001){
+      this.happiness--;
+      if(Math.random() < this.hunger * 0.0000001 * this.frailty){
         this.dead = true;
       }
     }
 
+    // Low chance of getting sick, low chance of healing self too
     if(this.sick && Math.random() < 0.00001){
       this.sick = false;
     } else if(Math.random() < 0.00001 * this.frailty){
       this.sick = true;
     }
 
+    // Treat your sick! They become very unhappy and might die
     if(this.sick && Math.random() < 0.00001 * (this.frailty / 2)){
       this.dead = true;
+    } else {
+      this.happiness--;
     }
 
     this.hunger++;
 
+    // No more AI if we're dead.
     if(!this.dead){
       setTimeout(pokemonAI.bind(this), 300);
     }
@@ -124,9 +136,16 @@ var Pokegotchi = (function(){
    * Feeds the Pokemon, reducing their hunger.
    *
    * @param pokemon <Object>: The Pokemon you wish to feed
+   * @param junk <Boolean> (Optional): Is it junk food? Default is no.
    */
-  Pokegotchi.prototype.feed = function(pokemon){
-    pokemon.hunger = Math.max(pokemon.hunger - 10000,  0);
+  Pokegotchi.prototype.feed = function(pokemon, junk){
+    if(junk){
+      pokemon.happiness += 1000;
+      pokemon.hunger = Math.max(pokemon.hunger - 1000, 0);
+      pokemon.frailty++;
+    } else if(pokemon.hunger < 9000){
+      pokemon.hunger = Math.max(pokemon.hunger - 10000,  0);
+    }
   };
 
   /**
@@ -136,8 +155,10 @@ var Pokegotchi = (function(){
    */
   Pokegotchi.prototype.cure = function(pokemon){
     pokemon.frailty++;
+
     if(Math.random() > 0.5 + pokemon.frailty * 0.01){
       pokemon.sick = false;
+      pokemon.happiness += 500;
     }
   };
 
