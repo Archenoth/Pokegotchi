@@ -29,7 +29,7 @@ var Pokegotchi = (function(){
    * so to check if it wants to do something.
    */
   function pokemonAI(){
-    if(this.moving){
+    if(this.moving && !this.sick){
       if(Math.random() < 0.50){
         if(this.facing == "left" && this.x >= 20){
           this.x -= 2;
@@ -45,11 +45,13 @@ var Pokegotchi = (function(){
       }
     }
 
-    // Gets sick rarely, and can heal on its own rarely
-    if(Math.random() < 0.00001){
-      this.sick ^= true;
-    }
     if(this.sick && Math.random() < 0.00001){
+      this.sick = false;
+    } else if(Math.random() < 0.00001 * this.frailty){
+      this.sick = true;
+    }
+
+    if(this.sick && Math.random() < 0.00001 * (this.frailty / 2)){
       this.dead = true;
     }
 
@@ -66,7 +68,7 @@ var Pokegotchi = (function(){
    *
    * @param pokemon <Object>: A TexturePacker object of a
    * Pokemon. This object should also contain an animation key that
-   * points to an objects with the keys "moving", "standing",
+   * points to an objects with the keys "moving", "standing", "sick",
    * "backMoving", and "backStanding". Each of these contains "start"
    * and "length" keys that reference the first frame, and length of
    * animation for each. For example:
@@ -75,7 +77,7 @@ var Pokegotchi = (function(){
    *    "moving": {start:0, length:80},
    *    "standing": {start:80, length: 33},
    *    "backMoving": {start:113, length: 80},
-   *    "backStanding": {start: 193, length: 33}
+   *    ...
    *  }
    *
    * @return <Object> The stats object of the newly created Pokemon,
@@ -120,9 +122,23 @@ var Pokegotchi = (function(){
 
   /**
    * Feeds the Pokemon, reducing their hunger.
+   *
+   * @param pokemon <Object>: The Pokemon you wish to feed
    */
-  Pokegotchi.prototype.feed = function(){
-    this.hunger = Math.max(this.hunger - 10000,  0);
+  Pokegotchi.prototype.feed = function(pokemon){
+    pokemon.hunger = Math.max(pokemon.hunger - 10000,  0);
+  };
+
+  /**
+   * Attempts to cure Pokemon with medicine.
+   *
+   * @param pokemon <Object>: The Pokemon you wish to heal
+   */
+  Pokegotchi.prototype.cure = function(pokemon){
+    pokemon.frailty++;
+    if(Math.random() > 0.5 + pokemon.frailty * 0.01){
+      pokemon.sick = false;
+    }
   };
 
   /**
@@ -175,7 +191,9 @@ var Pokegotchi = (function(){
      * 50 milliseconds.
      */
     function animate(){
-      if(this.moving){
+      if(this.sick){
+        this.animation = pokemon.animations.sick;
+      } else if(this.moving){
         this.animation = this.backTurned ? pokemon.animations.backMoving : pokemon.animations.moving;
       } else {
         this.animation = this.backTurned ? pokemon.animations.backStanding : pokemon.animations.standing;
@@ -199,7 +217,7 @@ var Pokegotchi = (function(){
       lastFrame.h = f.h;
       this.frame++;
 
-      setTimeout(animate.bind(this), 50);
+      setTimeout(animate.bind(this), 50 * (1 + this.hunger * 0.00002));
     }
 
     animate.call(parameters);
