@@ -39,8 +39,25 @@ var Pokegotchi = (function(){
       }
     }
 
+    if(this.hunger > 50000){
+      if(Math.random() < this.hunger * 0.0000001){
+        this.dead = true;
+      }
+    }
+
+    // Gets sick rarely, and can heal on its own rarely
+    if(Math.random() < 0.00001){
+      this.sick ^= true;
+    }
+    if(this.sick && Math.random() < 0.00001){
+      this.dead = true;
+    }
+
     this.hunger++;
-    setTimeout(pokemonAI.bind(this), 300);
+
+    if(!this.dead){
+      setTimeout(pokemonAI.bind(this), 300);
+    }
   }
 
   /**
@@ -73,7 +90,10 @@ var Pokegotchi = (function(){
       "calling": false,
       "hunger": 0,
       "happiness": 0,
-      "discipline": 0
+      "discipline": 0,
+      "frailty": 0,
+      "sick": 0,
+      "dead": false
     };
 
     /*
@@ -84,11 +104,11 @@ var Pokegotchi = (function(){
      * The rest of the state changing is AI-based and will be in
      * pokemonAI()
      */
-    this.display(pokemon, stats, function(){
-      if(Math.random() > 0.1){
+    display(pokemon, stats, function(){
+      if(Math.random() < 0.3){
         stats.moving ^= true;
       }
-      if(Math.random() > 0.3){
+      if(Math.random() < 0.3){
         stats.facing = stats.facing == "right" ? "left" : "right";
       }
     });
@@ -99,7 +119,15 @@ var Pokegotchi = (function(){
   };
 
   /**
-   * Displays the Pokemon on-screen and starts its animations.
+   * Feeds the Pokemon, reducing their hunger.
+   */
+  Pokegotchi.prototype.feed = function(){
+    this.hunger = Math.max(this.hunger - 10000,  0);
+  };
+
+  /**
+   * Internal function that displays the Pokemon on-screen and starts
+   * its animations.
    *
    * @param pokemon <Object>: An object converted from a TexturePacker
    * JSON array containing the animatino key specified to be passed
@@ -119,7 +147,7 @@ var Pokegotchi = (function(){
    * time to update state that will change the animation since it will
    * appear seamless if done here.
    */
-  Pokegotchi.prototype.display = function(pokemon, parameters, callback){
+  function display(pokemon, parameters, callback){
     parameters = parameters || {};
     parameters.frame |= 0;
     callback = callback || function(){};
