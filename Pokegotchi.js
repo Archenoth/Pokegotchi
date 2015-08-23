@@ -5,23 +5,27 @@
  * Pokegotchi -- a Tamagotchi clone with Pokemon.
  */
 var Pokegotchi = (function(){
-  var context,
-      canvas;
-
   /**
    * Constructor for the Pokegotchi game itself.
    *
-   * Creates and binds the Pokegotchi to an ID on the page.
-   * This must be the ID of a canvas element.
-   *
-   * @param id <String>: The ID of the canvas Element you want to bind
-   * the game to.
+   * @param id <String>: The ID of the Element to create the canvas
+   * elements the game will be bound to.
    */
   function Pokegotchi(id){
-    canvas = document.getElementById(id);
-    context = canvas.getContext('2d');
-    canvas.width = 320;
-    canvas.height = 240;
+    var target = document.getElementById(id);
+    var container = document.createElement('div');
+    container.style.position = 'relative';
+
+    this.canvas = document.createElement('canvas');
+    this.canvas.style.top = 0;
+    this.canvas.style.position = 'absolute';
+
+    container.appendChild(this.canvas);
+    target.appendChild(container);
+
+    this.context = this.canvas.getContext('2d');
+    this.canvas.width = 320;
+    this.canvas.height = 240;
   }
 
   /**
@@ -32,8 +36,11 @@ var Pokegotchi = (function(){
    *
    * @param textureObject <Object>: the TexturePacker object to parse,
    * specified in Pokegotchi.prototype.newPokemon()'s documentation.
+   *
+   * @param game <Pokegotchi>: The Pokegotchi instance this Pokemon
+   * will be a part of.
    */
-  function Pokemon(textureObject){
+  function Pokemon(textureObject, game){
     this.gender = Math.random() > 0.5 ? "male" : "female";
     this.facing = Math.random() > 0.5 ? "left" : "right";
     this.moving = true;
@@ -46,6 +53,7 @@ var Pokegotchi = (function(){
     this.sick = 0;
     this.dead = false;
     this.texture = textureObject;
+    this.game = game;
   }
 
   /**
@@ -87,7 +95,7 @@ var Pokegotchi = (function(){
       if(Math.random() < 0.50){
         if(this.facing == "left" && this.x >= 20){
           this.x -= 2;
-        } else if(this.x <= canvas.width - 20){
+        } else if(this.x <= this.game.canvas.width - 20){
           this.x += 2;
         }
       }
@@ -150,7 +158,7 @@ var Pokegotchi = (function(){
    * @return <Pokemon> The newly created Pokemon.
    */
   Pokegotchi.prototype.newPokemon = function(textureObject){
-    var pokemon = new Pokemon(textureObject);
+    var pokemon = new Pokemon(textureObject, this);
 
     /*
      * The callback will run when an animation is complete, meaning
@@ -193,6 +201,8 @@ var Pokegotchi = (function(){
   function display(pokemon, callback){
     pokemon.frame |= 0;
     callback = callback || function(){};
+    var canvas = pokemon.game.canvas;
+    var context = pokemon.game.context;
 
     if(isNaN(pokemon.x)){
       pokemon.x = canvas.width * 0.5;
