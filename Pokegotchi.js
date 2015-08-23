@@ -9,6 +9,8 @@ var Pokegotchi = (function(){
       canvas;
 
   /**
+   * Constructor for the Pokegotchi game itself.
+   *
    * Creates and binds the Pokegotchi to an ID on the page.
    * This must be the ID of a canvas element.
    *
@@ -23,12 +25,64 @@ var Pokegotchi = (function(){
   }
 
   /**
+   * Constructor for a Pokemon.
+   *
+   * Sets up a new Pokemon with a random gender, and all the initial
+   * state it needs to get on with living.
+   *
+   * @param textureObject <Object>: the TexturePacker object to parse,
+   * specified in Pokegotchi.prototype.newPokemon()'s documentation.
+   */
+  function Pokemon(textureObject){
+    this.gender = Math.random() > 0.5 ? "male" : "female";
+    this.facing = Math.random() > 0.5 ? "left" : "right";
+    this.moving = true;
+    this.backTurned = false;
+    this.calling = false;
+    this.hunger = 0;
+    this.happiness = 0;
+    this.discipline = 0;
+    this.frailty = 0;
+    this.sick = 0;
+    this.dead = false;
+    this.texture = textureObject;
+  }
+
+  /**
+   * Feeds the Pokemon, reducing their hunger.
+   *
+   * @param junk <Boolean> (Optional): Is it junk food? Default is no.
+   */
+  Pokemon.prototype.feed = function(junk){
+    if(junk){
+      this.happiness += 1000;
+      this.hunger = Math.max(this.hunger - 1000, 0);
+      this.frailty++;
+    } else if(this.hunger > 9000){
+      this.hunger = Math.max(this.hunger - 10000,  0);
+    }
+  };
+
+  /**
+   * Attempts to cure Pokemon with medicine.
+   */
+  Pokemon.prototype.cure = function(){
+    this.frailty++;
+
+    if(Math.random() > 0.5 + this.frailty * 0.01){
+      this.sick = false;
+      this.happiness += 500;
+    }
+  };
+
+  /**
    * The main internal Pokemon AI.
    *
-   * Once called, it will call itself once every * 300 milliseconds or
+   * Once called, it will call itself once every 300 milliseconds or
    * so to check if it wants to do something.
    */
   function pokemonAI(){
+    // May move--if it can move
     if(this.moving && !this.sick){
       if(Math.random() < 0.50){
         if(this.facing == "left" && this.x >= 20){
@@ -66,6 +120,7 @@ var Pokegotchi = (function(){
       this.happiness--;
     }
 
+    // Hunger grows with time
     this.hunger++;
 
     // No more AI if we're dead.
@@ -76,9 +131,9 @@ var Pokegotchi = (function(){
 
   /**
    * Creates a new Pokemon that will hop around the canvas with a
-   * number of default stats, and returns them in an object.
+   * number of default stats, and returns it.
    *
-   * @param pokemon <Object>: A TexturePacker object of a
+   * @param textureObject <Object>: A TexturePacker object of a
    * Pokemon. This object should also contain an animation key that
    * points to an objects with the keys "moving", "standing", "sick",
    * "dead", "backMoving", and "backStanding". Each of these contains
@@ -92,23 +147,10 @@ var Pokegotchi = (function(){
    *    ...
    *  }
    *
-   * @return <Object> The stats object of the newly created Pokemon,
-   * modifying the values of this object will modify the Pokemon.
+   * @return <Pokemon> The newly created Pokemon.
    */
-  Pokegotchi.prototype.newPokemon = function(pokemon){
-    var stats = {
-      "gender": Math.random() > 0.5 ? "male" : "female",
-      "facing": Math.random() > 0.5 ? "left" : "right",
-      "moving": true,
-      "backTurned": false,
-      "calling": false,
-      "hunger": 0,
-      "happiness": 0,
-      "discipline": 0,
-      "frailty": 0,
-      "sick": 0,
-      "dead": false
-    };
+  Pokegotchi.prototype.newPokemon = function(textureObject){
+    var pokemon = new Pokemon(textureObject);
 
     /*
      * The callback will run when an animation is complete, meaning
@@ -118,65 +160,29 @@ var Pokegotchi = (function(){
      * The rest of the state changing is AI-based and will be in
      * pokemonAI()
      */
-    display(pokemon, stats, function(){
+    display(pokemon, function(){
       if(Math.random() < 0.3){
-        stats.moving ^= true;
+        pokemon.moving ^= true;
       }
       if(Math.random() < 0.3){
-        stats.facing = stats.facing == "right" ? "left" : "right";
+        pokemon.facing = pokemon.facing == "right" ? "left" : "right";
       }
     });
 
-    pokemonAI.call(stats);
+    pokemonAI.call(pokemon);
 
-    return stats;
-  };
-
-  /**
-   * Feeds the Pokemon, reducing their hunger.
-   *
-   * @param pokemon <Object>: The Pokemon you wish to feed
-   * @param junk <Boolean> (Optional): Is it junk food? Default is no.
-   */
-  Pokegotchi.prototype.feed = function(pokemon, junk){
-    if(junk){
-      pokemon.happiness += 1000;
-      pokemon.hunger = Math.max(pokemon.hunger - 1000, 0);
-      pokemon.frailty++;
-    } else if(pokemon.hunger > 9000){
-      pokemon.hunger = Math.max(pokemon.hunger - 10000,  0);
-    }
-  };
-
-  /**
-   * Attempts to cure Pokemon with medicine.
-   *
-   * @param pokemon <Object>: The Pokemon you wish to heal
-   */
-  Pokegotchi.prototype.cure = function(pokemon){
-    pokemon.frailty++;
-
-    if(Math.random() > 0.5 + pokemon.frailty * 0.01){
-      pokemon.sick = false;
-      pokemon.happiness += 500;
-    }
+    return pokemon;
   };
 
   /**
    * Internal function that displays the Pokemon on-screen and starts
    * its animations.
    *
-   * @param pokemon <Object>: An object converted from a TexturePacker
-   * JSON array containing the animatino key specified to be passed
-   * into newPokemon()
-   *
-   * @param parameters <Object>: The stats of the Pokemon to be
-   * animated, this includes things like whether it is moving, it's X
-   * and Y coordinates, whether or not its back is turned, and so
-   * on. This function will pass this argument as the context of the
-   * animate() function inside, which will call itself with
-   * asynchronous recursion to handle picking the correct animation
-   * and displaying it based on the state of this object.
+   * @param pokemon <Pokemon>: A Pokemon. This function will pass this
+   * argument as the context of the animate() function inside, which
+   * will call itself with asynchronous recursion to handle picking
+   * the correct animation and displaying it based on the state of
+   * this Pokemon.
    *
    * @param callback <Function> (Optional): A callback function that
    * is called by animate() when an animation is finished. (All the
@@ -184,18 +190,19 @@ var Pokegotchi = (function(){
    * time to update state that will change the animation since it will
    * appear seamless if done here.
    */
-  function display(pokemon, parameters, callback){
-    parameters = parameters || {};
-    parameters.frame |= 0;
+  function display(pokemon, callback){
+    pokemon.frame |= 0;
     callback = callback || function(){};
 
-    if(isNaN(parameters.x)){
-      parameters.x = canvas.width * 0.5;
+    if(isNaN(pokemon.x)){
+      pokemon.x = canvas.width * 0.5;
     }
-    if(isNaN(parameters.y)){
-      parameters.y = canvas.height * 0.5;
+    if(isNaN(pokemon.y)){
+      pokemon.y = canvas.height * 0.5;
     }
 
+    var animations = pokemon.texture.animations;
+    var frames = pokemon.texture.frames;
     var sprites = new Image();
     var lastFrame = {
       "x": 0,
@@ -204,29 +211,31 @@ var Pokegotchi = (function(){
       "h": canvas.height
     };
 
-    sprites.src = pokemon.meta.image;
+    sprites.src = pokemon.texture.meta.image;
 
     /**
+     * Animates the Pokemon in this function's context.
+     *
      * Starts an animation based on the current context's state,
      * renders it, then calls itself with asynchronous recursion every
      * 50 milliseconds.
      */
     function animate(){
       if(this.dead){
-        this.animation = pokemon.animations.dead;
+        this.animation = animations.dead;
       } else if(this.sick){
-        this.animation = pokemon.animations.sick;
+        this.animation = animations.sick;
       } else if(this.moving){
-        this.animation = this.backTurned ? pokemon.animations.backMoving : pokemon.animations.moving;
+        this.animation = this.backTurned ? animations.backMoving : animations.moving;
       } else {
-        this.animation = this.backTurned ? pokemon.animations.backStanding : pokemon.animations.standing;
+        this.animation = this.backTurned ? animations.backStanding : animations.standing;
       }
 
       if(this.frame == this.animation.length){
         callback.call(this);
       }
 
-      var sprite = pokemon.frames[(this.frame %= this.animation.length) + this.animation.start];
+      var sprite = frames[(this.frame %= this.animation.length) + this.animation.start];
       var drawX = Math.floor(sprite.spriteSourceSize.x - sprite.sourceSize.w * 0.5) + this.x;
       var drawY = Math.floor(sprite.spriteSourceSize.y - sprite.sourceSize.h * 0.5) + this.y;
       var f = sprite.frame;
@@ -246,7 +255,7 @@ var Pokegotchi = (function(){
       }
     }
 
-    animate.call(parameters);
+    animate.call(pokemon);
   };
 
   return Pokegotchi;
