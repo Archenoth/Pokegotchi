@@ -143,7 +143,7 @@ var Pokegotchi = (function(){
       pokemon.happiness += 1000;
       pokemon.hunger = Math.max(pokemon.hunger - 1000, 0);
       pokemon.frailty++;
-    } else if(pokemon.hunger < 9000){
+    } else if(pokemon.hunger > 9000){
       pokemon.hunger = Math.max(pokemon.hunger - 10000,  0);
     }
   };
@@ -241,7 +241,8 @@ var Pokegotchi = (function(){
       this.frame++;
 
       if(!this.dead){
-        setTimeout(animate.bind(this), 50 * (1 + this.hunger * 0.00002));
+        // Slows animation down when the Pokemon is hungry
+        setTimeout(animate.bind(this), 50 + (this.hunger > 40000 ? 50 : 0));
       }
     }
 
