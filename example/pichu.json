@@ -2222,11 +2222,29 @@
    "scale": "1",
    "smartupdate": "$TexturePacker:SmartUpdate:d06bd5a6ed271f8f8a13d5ca09cf7719:97fad629bdecde9364cc9a904636e6cf:a209abc03f5c6cb61c2115445901959f$"
  }, "animations": {
-   "moving": {start:0, length:80},
-   "standing": {start:80, length: 33},
-   "backMoving": {start:113, length: 80},
-   "backStanding": {start: 193, length: 33},
-   "sick": {start: 226, length: 20},
-   "dead": {start: 226, length: 1}
+   "moving": {
+     "start":0,
+     "length":80
+   },
+   "standing": {
+     "start":80,
+     "length": 33
+   },
+   "backMoving": {
+     "start":113,
+     "length": 80
+   },
+   "backStanding": {
+     "start": 193,
+     "length": 33
+   },
+   "sick": {
+     "start": 226,
+     "length": 20
+   },
+   "dead": {
+     "start": 226,
+     "length": 1
+   }
  }
 }
