@@ -122,7 +122,7 @@ var Pokegotchi = (function(){
     }
 
     // Treat your sick! They become very unhappy and might die
-    if(this.sick && Math.random() < 0.00001 * (this.frailty / 2)){
+    if(this.sick && Math.random() < 0.000001 * this.frailty){
       this.dead = true;
     } else {
       this.happiness--;
@@ -266,7 +266,7 @@ var Pokegotchi = (function(){
     }
 
     animate.call(pokemon);
-  };
+  }
 
   return Pokegotchi;
 })();
