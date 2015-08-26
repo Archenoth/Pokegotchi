@@ -86,12 +86,23 @@ var Pokegotchi = (function(){
    * Attempts to cure Pokemon with medicine.
    */
   Pokemon.prototype.cure = function(){
-    this.frailty++;
+    if(this.sick){
+      this.frailty++;
 
-    if(Math.random() > 0.5 + this.frailty * 0.01){
-      this.sick = false;
-      this.happiness += 500;
+      if(Math.random() > 0.5 + this.frailty * 0.01){
+        this.sick = false;
+        this.happiness += 500;
+      }
+    } else {
+      this.happiness -= 1000;
     }
+  };
+
+  /**
+   * Cheers the Pokemon up by playing a game.
+   */
+  Pokemon.prototype.play = function(){
+    this.happiness += 10000;
   };
 
   /**
