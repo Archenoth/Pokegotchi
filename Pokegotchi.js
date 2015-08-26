@@ -18,14 +18,23 @@ var Pokegotchi = (function(){
 
     this.canvas = document.createElement('canvas');
     this.canvas.style.top = 0;
+    this.canvas.style.left = 0;
     this.canvas.style.position = 'absolute';
 
+    this.foreground = document.createElement('canvas');
+    this.foreground.style = this.canvas.style;
+
+    container.appendChild(this.foreground);
     container.appendChild(this.canvas);
     target.appendChild(container);
 
     this.context = this.canvas.getContext('2d');
     this.canvas.width = 320;
     this.canvas.height = 240;
+    this.foreground.width = this.canvas.width;
+    this.foreground.height = this.canvas.height;
+
+    drawInterface(this.foreground);
   }
 
   /**
@@ -267,6 +276,103 @@ var Pokegotchi = (function(){
 
     animate.call(pokemon);
   }
+
+  /**
+   * Draws the interface of the Pokegotchi
+   *
+   * @param canvas <Canvas>: The canvas element to draw the interface
+   * to.
+   */
+  var drawInterface = (function(){
+    /**
+     * The locations of the interface sprites in the Interface image,
+     * and their target location on the canvas.
+     */
+    var interfaceAtlas = {
+      "frames": {
+        "Pokemon_Calling.png": {
+          "frame": {"x":2,"y":2,"w":60,"h":60},
+          "location" : {"x":280,"y":200}
+        },
+        "Pokemon_Cure.png": {
+          "frame": {"x":64,"y":2,"w":54,"h":54},
+          "location" : {"x":280,"y":10}
+        },
+        "Pokemon_Feed.png": {
+          "frame": {"x":120,"y":2,"w":58,"h":55},
+          "location" : {"x":10,"y":10}
+        },
+        "Pokemon_Games.png": {
+          "frame": {"x":180,"y":2,"w":60,"h":60},
+          "location" : {"x":190,"y":10}
+        },
+        "Pokemon_Junk_food.png": {
+          "frame": {"x":242,"y":2,"w":54,"h":66},
+          "location" : {"x":10,"y":200}
+        },
+        "Pokemon_Lights.png": {
+          "frame": {"x":298,"y":2,"w":68,"h":68},
+          "location" : {"x":100,"y":10}
+        },
+        "Pokemon_No.png": {
+          "frame": {"x":368,"y":2,"w":67,"h":60},
+          "location" : {"x":190,"y":200}
+        },
+        "Pokemon_Stats.png": {
+          "frame": {"x":437,"y":2,"w":54,"h":54},
+          "location" : {"x":100,"y":200}
+        }
+      }
+    };
+
+    var interface = new Image();
+
+    // If drawInterface is called before the image is loaded, we want
+    // to run it on everything it was called on the millisecond the
+    // image is loaded.
+    interface.onload = function(){
+      var targets = drawInterface.targets;
+
+      if(targets){
+        targets.forEach(drawInterface);
+      }
+    };
+
+    interface.src = "img/interface.png";
+
+    function drawInterface(canvas){
+      if(interface.complete){
+        var context = canvas.getContext('2d');
+        context.globalAlpha = 0.5;
+
+        for(var name in interfaceAtlas.frames){
+          var image = interfaceAtlas.frames[name];
+          var f = image.frame;
+          var c = image.location;
+          context.drawImage(interface, f.x, f.y, f.w, f.h, c.x, c.y, 30, 30);
+        }
+
+        context.globalAlpha = 1;
+
+        // The lines seperating the buttons from the Pokemon viewport
+        context.beginPath();
+        context.moveTo(0, 50);
+        context.lineTo(320, 50);
+        context.stroke();
+
+        context.moveTo(0, 190);
+        context.lineTo(320, 190);
+        context.stroke();
+        context.closePath();
+      } else {
+        this.targets = this.targets || [];
+        this.targets.push(canvas);
+      }
+    };
+
+    return drawInterface;
+  })();
+
 
   return Pokegotchi;
 })();
