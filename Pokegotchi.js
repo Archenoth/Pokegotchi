@@ -89,7 +89,20 @@ var Pokegotchi = (function(){
    * Cheers the Pokemon up by playing a game.
    */
   Pokemon.prototype.play = function(){
-    this.happiness += 10000;
+    if(!this.spinning){
+      this.spinning = true;
+      var spins = 8;
+
+      (function spin(){
+        if(spins--){
+          this.backTurned ^= true;
+          setTimeout(spin.bind(this), 200);
+        } else {
+          this.happiness += 10000;
+          this.spinning = false;
+        }
+      }.bind(this))();
+    }
   };
 
   /**
