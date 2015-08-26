@@ -34,7 +34,9 @@ var Pokegotchi = (function(){
     this.foreground.width = this.canvas.width;
     this.foreground.height = this.canvas.height;
 
-    drawInterface(this.foreground);
+    this.interface = new Interface(this.foreground, function(){
+      this.drawInterface();
+    });
   }
 
   /**
@@ -278,12 +280,11 @@ var Pokegotchi = (function(){
   }
 
   /**
-   * Draws the interface of the Pokegotchi
-   *
-   * @param canvas <Canvas>: The canvas element to draw the interface
-   * to.
+   * Everthing pertaining to the interface that goes along the outside
+   * of the window. Nothing to do with the display of the Pokemon in
+   * the canvas.
    */
-  var drawInterface = (function(){
+  var Interface = (function(){
     /**
      * The locations of the interface sprites in the Interface image,
      * and their target location on the canvas.
@@ -325,52 +326,66 @@ var Pokegotchi = (function(){
       }
     };
 
-    var interface = new Image();
+    /**
+     * The constructor for a new interface object.
+     *
+     * @param canvas <Canvas>: A Canvas element to draw the interface
+     * to.
+     *
+     * @param callback <Function> (Optional): A callback function that
+     * will run when the interface images are loaded with this
+     * interface object in context.
+     */
+    function Interface(canvas, callback){
+      this.context = canvas.getContext('2d');
+      this.interface = new Image();
+      this.interface.onload = (callback.bind(this) || function(){});
+      this.interface.src = "img/interface.png";
+    }
 
-    // If drawInterface is called before the image is loaded, we want
-    // to run it on everything it was called on the millisecond the
-    // image is loaded.
-    interface.onload = function(){
-      var targets = drawInterface.targets;
+    /**
+     * Draws an image from the intefrace atlas to the screen.
+     *
+     * @param name <String>: The name of the image to draw from the
+     * atlas to the screen.
+     *
+     * @param alpha <Number> (Optional): The alpha for the
+     * draw. Default is 1.
+     */
+    Interface.prototype.drawImage = function(name, alpha){
+      var image = interfaceAtlas.frames[name];
+      var f = image.frame;
+      var c = image.location;
 
-      if(targets){
-        targets.forEach(drawInterface);
-      }
+      this.context.globalAlpha = alpha || 1;
+      this.context.clearRect(c.x, c.y, 30, 30);
+      this.context.drawImage(this.interface, f.x, f.y, f.w, f.h, c.x, c.y, 30, 30);
     };
 
-    interface.src = "img/interface.png";
-
-    function drawInterface(canvas){
-      if(interface.complete){
-        var context = canvas.getContext('2d');
-        context.globalAlpha = 0.5;
-
-        for(var name in interfaceAtlas.frames){
-          var image = interfaceAtlas.frames[name];
-          var f = image.frame;
-          var c = image.location;
-          context.drawImage(interface, f.x, f.y, f.w, f.h, c.x, c.y, 30, 30);
-        }
-
-        context.globalAlpha = 1;
-
-        // The lines seperating the buttons from the Pokemon viewport
-        context.beginPath();
-        context.moveTo(0, 50);
-        context.lineTo(320, 50);
-        context.stroke();
-
-        context.moveTo(0, 190);
-        context.lineTo(320, 190);
-        context.stroke();
-        context.closePath();
-      } else {
-        this.targets = this.targets || [];
-        this.targets.push(canvas);
+    /**
+     * Draws the interface of the Pokegotchi
+     *
+     * @param canvas <Canvas>: The canvas element to draw the interface
+     * to.
+     */
+    Interface.prototype.drawInterface = function(canvas){
+      for(var name in interfaceAtlas.frames){
+        this.drawImage(name, 0.5);
       }
+
+      // The lines seperating the buttons from the Pokemon viewport
+      this.context.beginPath();
+      this.context.moveTo(0, 50);
+      this.context.lineTo(320, 50);
+      this.context.stroke();
+
+      this.context.moveTo(0, 190);
+      this.context.lineTo(320, 190);
+      this.context.stroke();
+      this.context.closePath();
     };
 
-    return drawInterface;
+    return Interface;
   })();
 
 
