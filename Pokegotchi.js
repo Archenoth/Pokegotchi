@@ -142,9 +142,14 @@ var Pokegotchi = (function(){
     // Hunger grows with time
     this.hunger++;
 
+    // If the Pokemon is feeling bad in some way, it should call us.
+    this.calling = (this.sick || this.hunger > 15000 || this.happiness < 0);
+
     // No more AI if we're dead.
     if(!this.dead){
       setTimeout(pokemonAI.bind(this), 300);
+    } else {
+      this.calling = false;
     }
   }
 
@@ -186,6 +191,10 @@ var Pokegotchi = (function(){
       if(Math.random() < 0.3){
         pokemon.facing = pokemon.facing == "right" ? "left" : "right";
       }
+
+      // If the Pokemon is calling, we want to highlight the
+      // Pokemon_Calling.png interface atlas entry.
+      pokemon.game.interface.drawImage("Pokemon_Calling.png", pokemon.calling ? 1 : 0.5);
     });
 
     pokemonAI.call(pokemon);
