@@ -9,32 +9,17 @@ var Pokegotchi = (function(){
    * Constructor for the Pokegotchi game itself.
    *
    * @param id <String>: The ID of the Element to create the canvas
-   * elements the game will be bound to.
+   * element the game will be bound to.
    */
   function Pokegotchi(id){
-    var target = document.getElementById(id);
-    var container = document.createElement('div');
-    container.style.position = 'relative';
-
     this.canvas = document.createElement('canvas');
-    this.canvas.style.top = 0;
-    this.canvas.style.left = 0;
-    this.canvas.style.position = 'absolute';
-
-    this.foreground = document.createElement('canvas');
-    this.foreground.style = this.canvas.style;
-
-    container.appendChild(this.foreground);
-    container.appendChild(this.canvas);
-    target.appendChild(container);
-
     this.context = this.canvas.getContext('2d');
     this.canvas.width = 320;
     this.canvas.height = 240;
-    this.foreground.width = this.canvas.width;
-    this.foreground.height = this.canvas.height;
 
-    this.interface = new Interface(this.foreground, function(){
+    document.getElementById(id).appendChild(this.canvas);
+
+    this.interface = new Interface(this.canvas, function(){
       this.drawInterface();
     });
   }
@@ -65,6 +50,8 @@ var Pokegotchi = (function(){
     this.dead = false;
     this.texture = textureObject;
     this.game = game;
+
+    game.interface.addListener(handleClick.bind(this));
   }
 
   /**
@@ -214,6 +201,46 @@ var Pokegotchi = (function(){
   };
 
   /**
+   * Handles what action to take when a user clicks the canvas. Should
+   * have a Pokemon instance as context.
+   *
+   * @param image <String>: The name of the image clicked if there was one.
+   */
+  function handleClick(image){
+    switch(image){
+      case "Pokemon_Feed.png":
+        this.feed();
+        break;
+      case "Pokemon_Lights.png":
+        break;
+      case "Pokemon_Games.png":
+        this.play();
+        break;
+      case "Pokemon_Cure.png":
+        this.cure();
+        break;
+      case "Pokemon_Junk_food.png":
+        this.feed(true);
+        break;
+      case "Pokemon_Stats.png":
+        break;
+      case "Pokemon_No.png":
+        break;
+      default:
+    }
+
+    if(image){
+      var interface = this.game.interface;
+
+      interface.drawImage(image, 1);
+
+      setTimeout(function(){
+        interface.drawImage(image, 0.5);
+      }, 200);
+    }
+   }
+
+  /**
    * Internal function that displays the Pokemon on-screen and starts
    * its animations.
    *
@@ -361,7 +388,40 @@ var Pokegotchi = (function(){
       this.interface = new Image();
       this.interface.onload = (callback.bind(this) || function(){});
       this.interface.src = "img/interface.png";
+      var listeners = [];
+
+      canvas.onclick = function(e){
+        var viewport = e.target.getBoundingClientRect();
+        var x = e.clientX - viewport.left;
+        var y = e.clientY - viewport.top;
+        var whichImage;
+
+        for(var image in interfaceAtlas.frames){
+          var c = interfaceAtlas.frames[image].location;
+          if(x > c.x && x < c.x + 30 && y > c.y && y < c.y + 30){
+            (function(image){
+              listeners.forEach(function(listener){
+                listener(image);
+              });
+            })(image);
+          }
+        }
+      };
+
+      this.listeners = listeners;
     }
+
+    /**
+     * Adds a click listener to be notified when a click event occurs
+     * on the canvas. This listener will be called back with the image
+     * name that was clicked if there was an image clicked. If not, it
+     * will be called with undefined.
+     *
+     * @param listener <Function>: The listener to add
+     */
+    Interface.prototype.addListener = function(listener){
+      this.listeners.push(listener);
+    };
 
     /**
      * Draws an image from the intefrace atlas to the screen.
@@ -376,10 +436,12 @@ var Pokegotchi = (function(){
       var image = interfaceAtlas.frames[name];
       var f = image.frame;
       var c = image.location;
+      var originalAlpha = this.context.globalAlpha;
 
       this.context.globalAlpha = alpha || 1;
       this.context.clearRect(c.x, c.y, 30, 30);
       this.context.drawImage(this.interface, f.x, f.y, f.w, f.h, c.x, c.y, 30, 30);
+      this.context.globalAlpha = originalAlpha;
     };
 
     /**
@@ -398,7 +460,9 @@ var Pokegotchi = (function(){
       this.context.moveTo(0, 50);
       this.context.lineTo(320, 50);
       this.context.stroke();
+      this.context.closePath();
 
+      this.context.beginPath();
       this.context.moveTo(0, 190);
       this.context.lineTo(320, 190);
       this.context.stroke();
