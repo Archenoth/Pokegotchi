@@ -106,6 +106,16 @@ var Pokegotchi = (function(){
   };
 
   /**
+   * Displays a super-simple stats overlay
+   */
+  Pokemon.prototype.showStats = function(){
+    var friendlyHunger = Math.round(Math.min(this.hunger / 10000, 5));
+    var friendlyHappiness = Math.round(Math.min((this.happiness / 50000) * 5, 5));
+    this.game.interface.setTextOverlay("Hunger: " + friendlyHunger + ", Happy: " + friendlyHappiness);
+    this.showingStats = true;
+  };
+
+  /**
    * The main internal Pokemon AI.
    *
    * Once called, it will call itself once every 300 milliseconds or
@@ -228,6 +238,14 @@ var Pokegotchi = (function(){
    * @param image <String>: The name of the image clicked if there was one.
    */
   function handleClick(image){
+    var hideStats = this.showingStats && image;
+    // If we are looking at the Pokemon stats, clicking another button
+    // should get rid of the screen.
+    if(hideStats){
+      this.game.interface.setOverlay(this.game.lights);
+      this.showingStats = false;
+    }
+
     switch(image){
       case "Pokemon_Feed.png":
         this.feed();
@@ -245,6 +263,9 @@ var Pokegotchi = (function(){
         this.feed(true);
         break;
       case "Pokemon_Stats.png":
+        if(!hideStats){
+          this.showStats();
+        }
         break;
       case "Pokemon_No.png":
         break;
@@ -252,6 +273,7 @@ var Pokegotchi = (function(){
         return;
     }
 
+    // Images "blink" when clicked.
     if(image){
       var interface = this.game.interface;
 
@@ -409,7 +431,10 @@ var Pokegotchi = (function(){
      * interface object in context.
      */
     function Interface(canvas, callback){
+      this.canvas = canvas;
       this.context = canvas.getContext('2d');
+      this.context.font = "30px Sans";
+      this.context.textAlign = "center";
       this.interface = new Image();
       this.interface.onload = (callback.bind(this) || function(){});
       this.interface.src = "img/interface.png";
@@ -504,6 +529,21 @@ var Pokegotchi = (function(){
       }
 
       this.context.fillRect(0, 51, 320, 138);
+    };
+
+    /**
+     * Creates a text overlay screen with the specified text.
+     *
+     * @param text <String>: The text to draw on the screen in the
+     * overlay.
+     */
+    Interface.prototype.setTextOverlay = function(text){
+      var fillStyle = this.context.fillStyle;
+
+      this.setOverlay(true);
+      this.context.fillStyle = "white";
+      this.context.fillText(text, this.canvas.width / 2, this.canvas.height / 2);
+      this.context.fillStyle = fillStyle;
     };
 
     return Interface;
