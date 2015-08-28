@@ -214,6 +214,14 @@ var Pokegotchi = (function(){
   };
 
   /**
+   * Toggles the lights in the instance the Pokemon is in.
+   */
+  Pokegotchi.prototype.toggleLights = function(){
+    this.interface.setOverlay(this.lights ^= true);
+  };
+
+
+  /**
    * Handles what action to take when a user clicks the canvas. Should
    * have a Pokemon instance as context.
    *
@@ -225,6 +233,7 @@ var Pokegotchi = (function(){
         this.feed();
         break;
       case "Pokemon_Lights.png":
+        this.game.toggleLights();
         break;
       case "Pokemon_Games.png":
         this.play();
@@ -240,6 +249,7 @@ var Pokegotchi = (function(){
       case "Pokemon_No.png":
         break;
       default:
+        return;
     }
 
     if(image){
@@ -321,8 +331,10 @@ var Pokegotchi = (function(){
       var drawY = Math.floor(sprite.spriteSourceSize.y - sprite.sourceSize.h * 0.5) + this.y;
       var f = sprite.frame;
 
-      context.clearRect(lastFrame.x, lastFrame.y, lastFrame.w, lastFrame.h);
-      context.drawImage(sprites, f.x, f.y, f.w, f.h, drawX, drawY, f.w, f.h);
+      if(!this.game.interface.overlay){
+        context.clearRect(lastFrame.x, lastFrame.y, lastFrame.w, lastFrame.h);
+        context.drawImage(sprites, f.x, f.y, f.w, f.h, drawX, drawY, f.w, f.h);
+      }
 
       lastFrame.x = drawX;
       lastFrame.y = drawY;
@@ -480,6 +492,18 @@ var Pokegotchi = (function(){
       this.context.lineTo(320, 190);
       this.context.stroke();
       this.context.closePath();
+    };
+
+    Interface.prototype.setOverlay = function(on){
+      this.overlay = on;
+
+      if(on){
+        this.context.fillStyle = "#000";
+      } else {
+        this.context.fillStyle = "#fff";
+      }
+
+      this.context.fillRect(0, 51, 320, 138);
     };
 
     return Interface;
