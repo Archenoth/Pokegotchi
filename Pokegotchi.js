@@ -42,12 +42,13 @@ var Pokegotchi = (function(){
     this.moving = true;
     this.backTurned = false;
     this.calling = false;
-    this.hunger = 0;
-    this.happiness = 0;
+    this.dead = false;
+    this.naughty = false;
     this.discipline = 0;
     this.frailty = 0;
+    this.happiness = 0;
+    this.hunger = 0;
     this.sick = 0;
-    this.dead = false;
     this.texture = textureObject;
     this.game = game;
 
@@ -109,10 +110,30 @@ var Pokegotchi = (function(){
    * Displays a super-simple stats overlay
    */
   Pokemon.prototype.showStats = function(){
-    var friendlyHunger = Math.round(Math.min(this.hunger / 10000, 5));
-    var friendlyHappiness = Math.round(Math.min((this.happiness / 50000) * 5, 5));
+    var friendlyHunger = Math.max(0, Math.round(Math.min(this.hunger / 10000, 5)));
+    var friendlyHappiness = Math.max(0, Math.round(Math.min((this.happiness / 50000) * 5, 5)));
     this.game.interface.setTextOverlay("Hunger: " + friendlyHunger + ", Happy: " + friendlyHappiness);
     this.showingStats = true;
+  };
+
+  /**
+   * Scolds the Pokemon.
+   *
+   * Decreases happiness, though, if done while the Pokemon is being
+   * naughty, it increases discipline.
+   *
+   * Wrongfully scoling the Pokemon will decrease its happiness
+   * severely.
+   */
+  Pokemon.prototype.scold = function(){
+    this.happiness -= 10000;
+
+    if(this.naughty){
+      this.discipline++;
+      this.calling = false;
+    } else {
+      this.happiness -= 30000;
+    }
   };
 
   /**
@@ -158,6 +179,12 @@ var Pokegotchi = (function(){
       this.dead = true;
     } else {
       this.happiness--;
+    }
+
+    // Sometimes Pokemon might be a little naughty
+    if(Math.random() < 0.0001 / (this.discipline + 1)){
+      this.calling = true;
+      this.naughty = true;
     }
 
     // Hunger grows with time
@@ -268,6 +295,7 @@ var Pokegotchi = (function(){
         }
         break;
       case "Pokemon_No.png":
+        this.scold();
         break;
       default:
         return;
