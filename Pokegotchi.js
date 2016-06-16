@@ -49,6 +49,7 @@ var Pokegotchi = (function(){
     this.happiness = 0;
     this.hunger = 0;
     this.sick = 0;
+    this.age = 0;
     this.texture = textureObject;
     this.game = game;
 
@@ -195,6 +196,7 @@ var Pokegotchi = (function(){
 
     // No more AI if we're dead.
     if(!this.dead){
+      this.age++;
       setTimeout(pokemonAI.bind(this), 300);
     } else {
       this.calling = false;
