@@ -341,7 +341,7 @@ var Pokegotchi = (function(){
       pokemon.x = canvas.width * 0.5;
     }
     if(isNaN(pokemon.y)){
-      pokemon.y = canvas.height * 0.5;
+      pokemon.y = canvas.height * 0.6;
     }
 
     var animations = pokemon.texture.animations;
