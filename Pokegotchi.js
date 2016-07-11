@@ -351,7 +351,7 @@ var Pokegotchi = (function(){
       "x": 0,
       "y": 0,
       "w": canvas.width,
-      "h": canvas.height
+      "h": canvas.height - (51 * 2)
     };
 
     sprites.src = pokemon.texture.meta.image;
@@ -384,7 +384,7 @@ var Pokegotchi = (function(){
       var f = sprite.frame;
 
       if(!this.game.interface.overlay){
-        context.clearRect(lastFrame.x, lastFrame.y, lastFrame.w, lastFrame.h);
+        this.game.interface.drawBackground(lastFrame.x, lastFrame.y, lastFrame.w, lastFrame.h);
         context.drawImage(sprites, f.x, f.y, f.w, f.h, drawX, drawY, f.w, f.h);
       }
 
@@ -450,6 +450,9 @@ var Pokegotchi = (function(){
       }
     };
 
+    var background = new Image();
+    background.src = "img/Pokeball.svg";
+
     /**
      * The constructor for a new interface object.
      *
@@ -504,6 +507,40 @@ var Pokegotchi = (function(){
     };
 
     /**
+     * Draws the background in the specified coordinates, or across
+     * the entire playable section of the canvas if not specified.
+     *
+     * @param x <Number> (Optional): The x coordinate to draw the
+     * background at. Default is 0.
+     *
+     * @param y <Number> (Optional): The y coordinate to draw the
+     * background at. Default is 51 (Where the playble area starts
+     * since the border is 50 pixels tall with 1 pixel more for the
+     * border)
+     *
+     * @param w <Number> (Optional): How many pixels wide of the
+     * background should we draw? Default is the canvas width.
+     *
+     * @param h <Number> (Optional): How many pixels tall of the
+     * background should we draw? Default is the height of the
+     * playable area. (Computed using twice the size of the menu
+     * section height).
+     */
+    Interface.prototype.drawBackground = function(x, y, w, h){
+      var alpha = this.context.globalAlpha;
+      x = x || 0;
+      y = y || 51;
+      w = w || this.canvas.width;
+      h = h || this.canvas.height - (51 * 2);
+
+      this.context.clearRect(x, y, w, h);
+      this.context.globalAlpha = 0.25;
+      this.context.drawImage(background, x, y, w, h, x, y, w, h);
+      this.context.globalAlpha = alpha;
+    };
+
+
+    /**
      * Draws an image from the intefrace atlas to the screen.
      *
      * @param name <String>: The name of the image to draw from the
@@ -531,6 +568,8 @@ var Pokegotchi = (function(){
      * to.
      */
     Interface.prototype.drawInterface = function(canvas){
+      this.drawBackground();
+
       for(var name in interfaceAtlas.frames){
         this.drawImage(name, 0.5);
       }
@@ -554,11 +593,11 @@ var Pokegotchi = (function(){
 
       if(on){
         this.context.fillStyle = "#000";
+        this.context.fillRect(0, 51, 320, 138);
       } else {
-        this.context.fillStyle = "#fff";
+        this.drawBackground(0, 51, 320, 138);
       }
 
-      this.context.fillRect(0, 51, 320, 138);
     };
 
     /**
