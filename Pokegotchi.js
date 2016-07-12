@@ -66,7 +66,7 @@ var Pokegotchi = (function(){
       this.happiness += 1000;
       this.hunger = Math.max(this.hunger - 1000, 0);
       this.frailty++;
-    } else if(this.hunger > 9000){
+    } else if(this.hunger > 5000){
       this.hunger = Math.max(this.hunger - 10000,  0);
     }
   };
