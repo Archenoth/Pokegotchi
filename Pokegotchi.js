@@ -111,10 +111,21 @@ var Pokegotchi = (function(){
    * Displays a super-simple stats overlay
    */
   Pokemon.prototype.showStats = function(){
-    var friendlyHunger = Math.max(0, Math.round(Math.min(this.hunger / 10000, 5)));
-    var friendlyHappiness = Math.max(0, Math.round(Math.min((this.happiness / 50000) * 5, 5)));
-    this.game.interface.setTextOverlay("Hunger: " + friendlyHunger + ", Happy: " + friendlyHappiness);
+    var context = this.game.context;
+    var canvas = this.game.canvas;
+    var fillStyle = context.fillStyle;
+    var friendlyHunger = Math.max(0, Math.round(Math.min(this.hunger / 10000, 6)));
+    var friendlyHappiness = Math.max(0, Math.round(Math.min((this.happiness / 50000) * 5, 6)));
+    var hungryString = "Hunger: " + Array(7 - friendlyHunger).join("♥") + Array(friendlyHunger + 1).join("♡");
+    var happyString = "Happy: " + Array(friendlyHappiness + 1).join("♥") + Array(7 - friendlyHappiness).join("♡");
+
+    this.game.interface.setOverlay(true);
+    context.fillStyle = "white";
+    context.fillText(hungryString, 10, canvas.height * 0.45);
+    context.fillText(happyString, 25, canvas.height * 0.65);
     this.showingStats = true;
+
+    context.fillStyle = fillStyle;
   };
 
   /**
@@ -467,7 +478,6 @@ var Pokegotchi = (function(){
       this.canvas = canvas;
       this.context = canvas.getContext('2d');
       this.context.font = "30px Sans";
-      this.context.textAlign = "center";
       this.interface = new Image();
       this.interface.onload = (callback.bind(this) || function(){});
       this.interface.src = "img/interface.png";
@@ -598,21 +608,6 @@ var Pokegotchi = (function(){
         this.drawBackground(0, 51, 320, 138);
       }
 
-    };
-
-    /**
-     * Creates a text overlay screen with the specified text.
-     *
-     * @param text <String>: The text to draw on the screen in the
-     * overlay.
-     */
-    Interface.prototype.setTextOverlay = function(text){
-      var fillStyle = this.context.fillStyle;
-
-      this.setOverlay(true);
-      this.context.fillStyle = "white";
-      this.context.fillText(text, this.canvas.width / 2, this.canvas.height / 2);
-      this.context.fillStyle = fillStyle;
     };
 
     return Interface;
