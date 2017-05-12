@@ -50,6 +50,8 @@ var Pokegotchi = (function(){
     this.hunger = 60000;
     this.sick = 0;
     this.age = 0;
+    this.money = 0;
+
     this.texture = textureObject;
     this.game = game;
 
@@ -172,7 +174,8 @@ var Pokegotchi = (function(){
             this.happiness.toString(36),
             this.hunger.toString(36),
             this.sick.toString(36),
-            this.age.toString(36)].join("\0");
+            this.age.toString(36),
+            this.money.toString(36)].join("\0");
   };
 
   /**
@@ -201,6 +204,7 @@ var Pokegotchi = (function(){
     this.hunger = parseInt(state[4], 36);
     this.sick = parseInt(state[5], 36);
     this.age = parseInt(state[6], 36);
+    this.money = parseInt(state[7], 36);
   };
 
   /**
