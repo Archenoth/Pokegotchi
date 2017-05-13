@@ -102,6 +102,7 @@ var Pokegotchi = (function(){
           this.backTurned ^= true;
           setTimeout(spin.bind(this), 200);
         } else {
+          this.money += 10;
           this.happiness += 10000;
           this.spinning = false;
         }
