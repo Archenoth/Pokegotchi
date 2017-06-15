@@ -463,9 +463,9 @@ var Pokegotchi = (function(){
       } else if(this.sick){
         this.animation = animations.sick;
       } else if(this.moving){
-        this.animation = this.backTurned ? animations.backMoving : animations.moving;
+        this.animation = this.facing === "right" ? animations.movingRight : animations.movingLeft;
       } else {
-        this.animation = this.backTurned ? animations.backStanding : animations.standing;
+        this.animation = this.facing === "right" ? animations.standingRight : animations.standingLeft;
       }
 
       if(this.frame == this.animation.length){
