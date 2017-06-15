@@ -39,7 +39,7 @@ var Pokegotchi = (function(){
   function Pokemon(textureObject, game){
     this.gender = Math.random() > 0.5 ? "male" : "female";
     this.facing = Math.random() > 0.5 ? "left" : "right";
-    this.moving = true;
+    this.moving = false;
     this.backTurned = false;
     this.calling = false;
     this.dead = false;
@@ -329,7 +329,7 @@ var Pokegotchi = (function(){
      * pokemonAI()
      */
     display(pokemon, function(){
-      if(Math.random() < 0.3){
+      if(Math.random() < 0.1){
         pokemon.moving ^= true;
       }
       if(Math.random() < 0.3){
