@@ -489,8 +489,9 @@ var Pokegotchi = (function(){
       this.frame++;
 
       if(!this.dead){
+        var animationSpeed = this.animation.speed || animations.speed || 50;
         // Slows animation down when the Pokemon is hungry
-        setTimeout(animate.bind(this), 50 + (this.hunger > 40000 ? 50 : 0));
+        setTimeout(animate.bind(this), animationSpeed + (this.hunger > 40000 ? 50 : 0));
       }
     }
 
