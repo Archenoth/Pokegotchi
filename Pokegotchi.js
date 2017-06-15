@@ -291,7 +291,7 @@ var Pokegotchi = (function(){
     // No more AI if we're dead.
     if(!this.dead){
       this.age++;
-      setTimeout(pokemonAI.bind(this), 300);
+      setTimeout(pokemonAI.bind(this), 100);
     } else {
       this.calling = false;
     }
